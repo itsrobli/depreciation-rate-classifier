@@ -88,7 +88,7 @@ Input from user:
 Result:
 	account: 			CGT_Cost_Base_0
 	deprn rate: 		0.0% prime cost
-	effecrive life: 	0 years effective life
+	effective life: 	0 years effective life
 	tax category: 		CGT_Cost_Base
 END of Result
 
@@ -99,7 +99,7 @@ Input from user:
 Result:
 	account: 			CGT_Cost_Base_0
 	deprn rate: 		0.0% prime cost
-	effecrive life: 	0 years effective life
+	effective life: 	0 years effective life
 	tax category: 		CGT_Cost_Base
 END of Result
 
@@ -110,7 +110,7 @@ Input from user:
 Result:
 	account: 			Div40_Plant_6
 	deprn rate: 		16.6% prime cost
-	effecrive life: 	6 years effective life
+	effective life: 	6 years effective life
 	tax category: 		Div40_Plant
 END of Result
 
@@ -121,7 +121,7 @@ Input from user:
 Result:
 	account: 			Div40_Plant_20
 	deprn rate: 		5.0% prime cost
-	effecrive life: 	20 years effective life
+	effective life: 	20 years effective life
 	tax category: 		Div40_Plant
 END of Result
 
@@ -132,7 +132,7 @@ Input from user:
 Result:
 	account: 			Div40_Plant_25
 	deprn rate: 		4.0% prime cost
-	effecrive life: 	25 years effective life
+	effective life: 	25 years effective life
 	tax category: 		Div40_Plant
 END of Result
 
@@ -143,7 +143,7 @@ Input from user:
 Result:
 	account: 			Div40_Plant_25
 	deprn rate: 		4.0% prime cost
-	effecrive life: 	25 years effective life
+	effective life: 	25 years effective life
 	tax category: 		Div40_Plant
 END of Result
 ```
@@ -157,7 +157,7 @@ I would note from experience that the accuracy of the predictions is highly depe
 
 The best data to use would be actual descriptions and assets from a REIT's fixed asset/depreciation register. Unfortunately, this data is proprietary to organisations unless donated to this repo.
 
-However, I have some [ideas]([###Next-iteration]) to generate some data.
+However, I have some [ideas]([#next-iteration]) to generate some data.
 
 
 # Installation

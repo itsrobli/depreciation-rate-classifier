@@ -28,7 +28,7 @@ while True:
         print(f'Result:')
         print(f'\taccount: \t\t\t{predicted_account}')
         print(f'\tdeprn rate: \t\t{rate_perc}')
-        print(f'\teffecrive life: \t{life}')
+        print(f'\teffective life: \t{life}')
         print(f'\ttax category: \t\t{tax_cat}')
         print('END of Result')
         print()
