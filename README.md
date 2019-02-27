@@ -10,17 +10,19 @@ The goal is to achieve over 90% prediction accuracy in all scenarios.
 - 80%+ accuracy when text is similar in style to the training data regardless of small spelling errors, ordering of words, language variations (e.g. -ed, -ing, -s, etc).
 - Only around 50% or less accuracy when the text is of a very different style to the training data.
 
+Please feel free to contribute suggests, corrections, and training data.
+
 
 # Problem to be solved - a brief background
 
-In the Real Estate Investment Trust (REIT / Property Funds) industry, real estate assets are held for investment purposes to provide income distributions to investors. A feature of REITs for investors are non-taxable cash distributions which are primarily driven by tax deductible/depreciable capex.
+In the Real Estate Investment Trust (REIT / Property Funds) industry, real estate assets are held for investment purposes to provide income distributions to investors. A feature of Australian REITs for investors are non-taxable cash distributions which are primarily driven by tax deductible/depreciable capex.
 
 Capex can result in various tax outcomes depending on the jurisdiction. In Australia, generally, depending on the nature of the cost, can be categorised and treated as: 
 
-1. Immediately deductible; 
-2. Depreciated as an tax asset over its effective life at [various](https://www.ato.gov.au/law/view/document?LocID=%22TXR%2FTR20184%2FNAT%2FATO%2FatTABLEB%22&PiT=99991231235958#TABLEB) depreciation rates; 
-3. Be eligible for a building allowance deduction over 25 of 40 years; or
-4. Added to the cost base of the asset to reduce the capital gain upon disposal.
+1. Immediately tax deductible; 
+2. Depreciated as a tax asset over its effective life at [various](https://www.ato.gov.au/law/view/document?LocID=%22TXR%2FTR20184%2FNAT%2FATO%2FatTABLEB%22&PiT=99991231235958#TABLEB) depreciation rates; 
+3. Be eligible for a building allowance deduction over 25 or 40 years; or
+4. Added to the cost base of the asset to reduce the capital gain upon sale of the property.
 
 An expert can be engaged to create a tax depreciation schedule (aka QS report) that breaks down costs into these categories. Industry practice is that this is usually done for high-value capex e.g. a property acquisition or major development project. However, a lot of the day-to-day capex is high-volume and low-value. This does not make it cost effective to outsource to an expert. As such, most businesses are classifying these items manually based on accounting system descriptions or invoices (or not at all and missing out on tax deductions). 
 
@@ -35,31 +37,31 @@ The machine learning model is built using training data (arbitrary text descript
 
 ![workflow](img/ml_workflow.png)
 
-The text is pre-processed to help the ML model find "meaning" in the text; rather than doing something more basic like string (word) matching, word length counting, etc. This means that the model can overcome small spelling mistakes, variances in ordering, and different forms of the same word (e.g. 'carpet' and 'carpeting' "mean" the same thing). This is vital to the usefulness of the model as it's designed to accept arbitrary text data to provide maximum flexibility in its usage. Further ML details [below](#some-machine-learning-details).
+The text is pre-processed to help the machine learning model find "meaning" in the text; rather than doing something more basic like string (word) matching, word length counting, etc. This means that the model can overcome small spelling mistakes, variances in ordering, and different forms of the same word (e.g. 'carpet' and 'carpeting' "mean" the same thing). This is vital to the usefulness of the model as it's designed to accept arbitrary text data to provide maximum flexibility in its usage. Further machine learning details [below](#some-machine-learning-details).
 
 ## Validation and accuracy
 
-The trained model is tested by predicting results using other data with a known classification. The predicted classification is then matched against the known classification giving an overall correctness %.
+The trained model is tested by predicting results using other data with a known classification (testing data). The predicted classification is then matched against the known classifications in the testing data giving an overall accuracy %.
 
-Using private training data not included in this repo, a model was developed using 18,899 rows of training data which produced:
+Using proprietary training data not included in this repo, a model was developed using 18,899 rows of training data which produced:
 
-- 89.6% accuracy when using a random subset of the training data for training data vs testing data.
+- 89.6% accuracy when using a random subset of the training data as testing data.
 - 83.8% accuracy using K-Fold Cross Validation using 10 subsets (more thorough version of above).
 - 92.3% accuracy when entirely tested against itself (artificially high).
 
-This repo includes anonymised training data. It is sourced from the Australian Tax Office [effective life tables](https://www.ato.gov.au/law/view/document?DocID=TXR/TR20184/NAT/ATO/00001) (run the `demo.py` included, and follow the instructions to run an accuracy report).
+This repo includes [generic training data](#training-data). It is developed from the Australian Tax Office [effective life tables](https://www.ato.gov.au/law/view/document?DocID=TXR/TR20184/NAT/ATO/00001) (run the `demo.py` included, and follow the instructions to run an accuracy report). It works ok for demo purposes.
 
-I've found that using capex descriptions of a language style which is very different from the training data causes the accuracy to deteriorate rapidly. More on this [here](#further-improvements-in-the-works).
+I've found that using capex descriptions of a language style which is very different from the training data causes the accuracy to deteriorate rapidly. More on this [here](#further-improvements-in-the-works). As such, a model created using the included sample training data has limited flexibility in production.
 
 ## Future applications
 
 The trained model can easily be used programmatically as part of a broader automated system. The goal is to have a workflow like:
 
-1. Arbitrarily structured text can be fed directly into the model from the accounting system transaction descriptions, or other system/process that itemises the costs. This flexibility is the key reason for using machine learning vs another method that may be simpler and more reliable (but would require structured text inputs).
+1. Arbitrarily structured text can be fed directly into the model from the accounting system transaction descriptions, or other system/process that itemises the costs. This flexibility is the key reason for using machine learning vs another method that is more basic and reliable (but would require structured text inputs).
 
 2. The text is classified using the machine learning model. 
 
-3. The classification is combined with the original accounting system transaction data to generate the accounting/ERP system input entries which would then process it and run the tax depreciation module. 
+3. The classification is combined with the original accounting system transaction data to generate the accounting/ERP system input file (e.g. journal entry) which would then be ingested into the tax depreciation module. 
 
 ## Further improvements in the works...
 
@@ -67,7 +69,7 @@ The training dataset has high reliability of having the correct classification, 
 
 Another thing to point out is that the model appears to bias towards classifications where there is more training data of a certain category. However, this is not necessarily a weakness. If the training data set is reflective of a business's actual depreciation register, the natural distribution of assets/capex purchased would be reflected in the predictions (e.g. it wouldn't be normal to have 1,000s of air conditioners for every 1 chair).
 
-These issues can be seen in the accuracy reports when using K-Fold Cross Validation (validation data is not used for training) vs testing the data against itself (validation data is all the same as training data).
+These issues can be seen in the accuracy reports when using K-Fold Cross Validation (validation/testing data is not used for training) resulting in low accuracy vs testing the data against itself (validation/testing data is the same as the training data) resulting in almost perfect accuracy.
 
 I've found that using new training data (different language style, different descriptions) results in higher prediction accuracies. 
 
@@ -75,13 +77,13 @@ I've found that using new training data (different language style, different des
 
 My next experiment with this is to generate additional training data by finding synonym combinations and alternative expressions for the existing training data. This should overcome some of the language style issues. E.g. 'stamp duty' vs 'duty' vs 'duties' vs 'stamp' vs 'SD' vs 'stmp dty'.
 
-Also, crowd-sourced training data can be gathered to further refine the model for real world text description. By making available a testing environemnt where a user can feed in their live examples from their existing, manual process, the user can manually flag and correct wrong predictions. This feedback data can be combined with the other training data for further refinement of the model. 
+Also, crowd-sourced training data can be gathered to further refine the model for real world text description. By making available a testing environment where a user can feed in their live examples from their existing, manual process, the user can manually flag and correct wrong predictions. This feedback data can be combined with the other training data for further refinement of the model. 
 
 Ultimately, a lot of experimentation is required to see what works to achieve the [goal](#goal).
 
 ## Some machine learning details
 
-In order to run machine learning algorithms on text based data like this, we need to transform the text into numerical values. Pre-processing this tex is vital to the accuracy of the model.
+In order to run machine learning algorithms on text based data like this, we need to transform the text into numerical values. Pre-processing this text is vital to the accuracy of the model.
  
 Bag-of-words is one of the most used models for text. It essentially assigns a numerical value to words, creating a list of numbers.
 
@@ -94,7 +96,7 @@ These issues and others are dealt with during the training of the model.
 
 # Code usage info
 
-The code is in `src/text_classifier_deprn_rates.py`. Once the `DeprnPredictor` Class has been instantiatied, call the `predict_description(user_description)` method by feeding it some text to classify. Use a loop and call this method over and over again for each text description. 
+The code is in `src/text_classifier_deprn_rates.py`. Once the `DeprnPredictor` Class has been instantiated, call the `predict_description(user_description)` method by feeding it some text to classify. Use a loop and call this method over and over again for each text description. 
 
 The method returns two objects being:
 1. A `pandas` Series object containing the various details of the tax category predicted.
@@ -108,7 +110,7 @@ Included in the repo is sample training data (`src/data_training/sample_training
 
 I would note from experience that the accuracy of the predictions is highly dependent on good training data. This sample data creates decent results if the language used is very similar to it.
 
-The best data to use would be actual descriptions of items from a REIT's fixed asset/depreciation register and underlying acocunting transaction descriptions. Unfortunately, this data is proprietary to organisations unless donated to this repo.
+The best data to use would be actual descriptions of items from a REIT's fixed asset/depreciation register and underlying accounting transaction descriptions. Unfortunately, this data is proprietary to organisations unless donated to this repo.
 
 However, I have some [ideas](#next-iteration) to generate some data.
 
