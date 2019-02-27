@@ -76,8 +76,6 @@ See `demo.py` for an example of usage of this. Sample interaction below:
 
 ```
 Evaluate using user input.
-
-  FutureWarning)
 "QQ" to quit.
 "CR" to see classification report.
 Otherwise...
