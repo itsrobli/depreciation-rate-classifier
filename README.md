@@ -1,28 +1,43 @@
 # Automatic tax depreciation rate tagger/classifier
 
-This program uses machine learning to predict the tax depreciation rate when given a text description of an asset/capital expenditure (capex).
+This program uses machine learning to predict the tax depreciation rate and category when given an arbitrary text description of an asset/capital expenditure (capex).
+
+## Goal
+
+The goal is to achieve over 90% prediction accuracy in all scenarios.
+
+[Currently](#validation-and-accuracy), it can achieve:
+- 80%+ accuracy when text is similar in style to the training data regardless of small spelling errors, ordering of words, language variations (e.g. -ed, -ing, -s, etc).
+- Only around 50% or less accuracy when the text is of a very different style to the training data.
 
 
-# Problem to solve
+# Problem to be solved - a brief background
 
 In the Real Estate Investment Trust (REIT / Property Funds) industry, real estate assets are held for investment purposes to provide income distributions to investors. A feature of REITs for investors are non-taxable cash distributions which are primarily driven by tax deductible/depreciable capex.
 
-Capex can result in various tax outcomes depending on the jurisdiction. In Australia, generally, depending on the nature of the cost can be: (1) immediately deductible, (2) depreciated over its life at [various](https://www.ato.gov.au/law/view/document?LocID=%22TXR%2FTR20184%2FNAT%2FATO%2FatTABLEB%22&PiT=99991231235958#TABLEB) depreciation rates, (3) be eligible for a building allowance deduction, (4) added to the cost base of the asset to reduce the capital gain upon disposal.
+Capex can result in various tax outcomes depending on the jurisdiction. In Australia, generally, depending on the nature of the cost, can be categorised and treated as: 
 
-An expert can be engaged to create a tax depreciation schedule (i.e. QS report). This is usually the case for high-value capex e.g. a property acquisition or development project. However, a lot of the day-to-day capex is high-volume and low-value. This does not make it cost effective to outsource to an expert. As such, most businesses are classifying these items manually (or not at all and missing out on tax deductions). 
+1. Immediately deductible; 
+2. Depreciated as an tax asset over its effective life at [various](https://www.ato.gov.au/law/view/document?LocID=%22TXR%2FTR20184%2FNAT%2FATO%2FatTABLEB%22&PiT=99991231235958#TABLEB) depreciation rates; 
+3. Be eligible for a building allowance deduction over 25 of 40 years; or
+4. Added to the cost base of the asset to reduce the capital gain upon disposal.
 
-These manual processes, by nature of being high-volume, are time consuming; and by nature of being low-value, do not result in material errors if an item is misclassified. These attributes make this problem ideal for machine learning to solve.
+An expert can be engaged to create a tax depreciation schedule (aka QS report) that breaks down costs into these categories. Industry practice is that this is usually done for high-value capex e.g. a property acquisition or major development project. However, a lot of the day-to-day capex is high-volume and low-value. This does not make it cost effective to outsource to an expert. As such, most businesses are classifying these items manually based on accounting system descriptions or invoices (or not at all and missing out on tax deductions). 
+
+These manual processes, by nature of being high-volume and based on arbitrary descriptions, are time consuming; and by nature of being low-value, do not result in material errors if an item is misclassified. These attributes make this problem ideal for machine learning to solve.
 
 
 # How does this program work?
 
-While doing some machine learning exercises, particularly [this one](https://joaorafaelm.github.io/blog/text-classification-with-python), it occurred to me that this problem is essentially a text classification problem. Done manually, a person would read a cost description from a cost report, like "chiller", and then [look it up in the tables](https://www.ato.gov.au/law/view/document?DocID=TXR%2FTR20184%2FNAT%2FATO%2F00023) to find it's either 25 years or 20 years depending on the type.
+While doing some machine learning exercises, particularly [this one](https://joaorafaelm.github.io/blog/text-classification-with-python), it occurred to me that this problem is essentially a text classification problem. Done manually, a person would read an arbitrary cost description from a cost report, like "chillers for precinct A", and then [look it up in the tables](https://www.ato.gov.au/law/view/document?DocID=TXR%2FTR20184%2FNAT%2FATO%2F00023) to find it's either 25 years or 20 years effective life depending on the type of chiller.
 
-The machine learning model is built using training data (text descriptions of assets / capex) that has previously been reliably classified (tagged with a depreciation type/rate). Once the model is trained, text descriptions of capex can be fed in, and it will predict the tax attributes.
+The machine learning model is built using training data (arbitrary text descriptions of capex) that has previously been reliably classified (tagged with a depreciation type/rate). Once the model is trained, text descriptions of capex can be fed in, and it will predict the tax attributes.
 
 ![workflow](img/ml_workflow.png)
 
-## Validation
+The text is pre-processed to help the ML model find "meaning" in the text; rather than doing something more basic like string (word) matching, word length counting, etc. This means that the model can overcome small spelling mistakes, variances in ordering, and different forms of the same word (e.g. 'carpet' and 'carpeting' "mean" the same thing). This is vital to the usefulness of the model as it's designed to accept arbitrary text data to provide maximum flexibility in its usage. Further ML details [below](#some-machine-learning-details).
+
+## Validation and accuracy
 
 The trained model is tested by predicting results using other data with a known classification. The predicted classification is then matched against the known classification giving an overall correctness %.
 
@@ -34,25 +49,35 @@ Using private training data not included in this repo, a model was developed usi
 
 This repo includes anonymised training data. It is sourced from the Australian Tax Office [effective life tables](https://www.ato.gov.au/law/view/document?DocID=TXR/TR20184/NAT/ATO/00001) (run the `demo.py` included, and follow the instructions to run an accuracy report).
 
-I've found that using capex descriptions of a style which is very different from the training data causes the accuracy to deteriorate rapidly.
+I've found that using capex descriptions of a language style which is very different from the training data causes the accuracy to deteriorate rapidly. More on this [here](#further-improvements-in-the-works).
 
 ## Future applications
 
-The trained model can easily be used programmatically as part of a broader automated system. E.g. text can be fed directly into the model from the accounting ledger descriptions, classified using the model, then generate the accounting system input entries to capitalise to the correct accounts and fixed asset register. 
+The trained model can easily be used programmatically as part of a broader automated system. The goal is to have a workflow like:
+
+1. Arbitrarily structured text can be fed directly into the model from the accounting system transaction descriptions, or other system/process that itemises the costs. This flexibility is the key reason for using machine learning vs another method that may be simpler and more reliable (but would require structured text inputs).
+
+2. The text is classified using the machine learning model. 
+
+3. The classification is combined with the original accounting system transaction data to generate the accounting/ERP system input entries which would then process it and run the tax depreciation module. 
 
 ## Further improvements in the works...
 
-The training dataset has high reliability of having the correct classification, however, the text descriptions are of a single style. By training the model with real world text descriptions (different styles of language) and offering feedback and corrections, the model's accuracy may be improved. 
+The training dataset has high reliability of having the correct classification, however, the text descriptions are of a single language style. By training the model with real world text descriptions (different styles of language) and offering feedback and corrections, the model's accuracy may be improved. 
 
-Another thing to point out is that the model appears to bias towards classifications where there is more training data of that depreciation category. However, this is not necessarily a weakness. If the training data set is reflective of a business's actual depreciation register, the natural distribution of assets/capex purchased would be reflected in the predictions (e.g. not many of us need 1,000s of air conditioners for every 1 chair).
+Another thing to point out is that the model appears to bias towards classifications where there is more training data of a certain category. However, this is not necessarily a weakness. If the training data set is reflective of a business's actual depreciation register, the natural distribution of assets/capex purchased would be reflected in the predictions (e.g. it wouldn't be normal to have 1,000s of air conditioners for every 1 chair).
 
-These issues can be seen in the accuracy results when using K-Fold Cross Validation vs testing the data against itself.
+These issues can be seen in the accuracy reports when using K-Fold Cross Validation (validation data is not used for training) vs testing the data against itself (validation data is all the same as training data).
 
-I've found that creating new training data (different style, new descriptions) results in higher prediction accuracies. These weaknesses may be overcome by using a testing environemnt where a user can manually flag and correct wrong predictions so the training data can be further refined. 
+I've found that using new training data (different language style, different descriptions) results in higher prediction accuracies. 
 
 ### Next iteration
 
-My next experiment with this is to generate additional training data by finding synonym combinations for the existing training data. This should overcome some of the text style issues
+My next experiment with this is to generate additional training data by finding synonym combinations and alternative expressions for the existing training data. This should overcome some of the language style issues. E.g. 'stamp duty' vs 'duty' vs 'duties' vs 'stamp' vs 'SD' vs 'stmp dty'.
+
+Also, crowd-sourced training data can be gathered to further refine the model for real world text description. By making available a testing environemnt where a user can feed in their live examples from their existing, manual process, the user can manually flag and correct wrong predictions. This feedback data can be combined with the other training data for further refinement of the model. 
+
+Ultimately, a lot of experimentation is required to see what works to achieve the [goal](#goal).
 
 ## Some machine learning details
 
@@ -67,12 +92,29 @@ Other problems relate to trying to extract "meaning" from words. Take for exampl
 These issues and others are dealt with during the training of the model.
 
 
-# Usage
+# Code usage info
 
-The primary code is in `text_classifier_deprn_rates.py`. Once the `DeprnPredictor` Class has been instantiatied, call the `predict_description(user_description)` method by feeding it some text to classify. Use a loop and call this over and over again.
+The code is in `src/text_classifier_deprn_rates.py`. Once the `DeprnPredictor` Class has been instantiatied, call the `predict_description(user_description)` method by feeding it some text to classify. Use a loop and call this method over and over again for each text description. 
 
+The method returns two objects being:
+1. A `pandas` Series object containing the various details of the tax category predicted.
+2. An "account" description string matching how the training data labels its categories. This is basically a made up code for each possible tax category. See `src/account_meanings.csv` for a table showing the meanings. The reason for this design is that most accounting/ERP systems use something like this behind the scenes to drive the tax depreciation module. It can be anything so long as it matches the training data.
 
-See `demo.py` for an example of usage of this. Sample interaction below:
+The `DeprnPredictor` Class is just a simple wrapper around some common machine learning libraries and techniques for classifying text data. It abstracts some of the fiddlier steps like pre-processing and building the pipeline. As a trade-off some bugs can occur due to how `pickle` is handled by the underlying ML libraries.
+
+## Training data
+
+Included in the repo is sample training data (`src/data_training/sample_training_data.csv`) based on the Australian Tax Office [effective life tables](https://www.ato.gov.au/law/view/document?DocID=TXR/TR20184/NAT/ATO/00001). 
+
+I would note from experience that the accuracy of the predictions is highly dependent on good training data. This sample data creates decent results if the language used is very similar to it.
+
+The best data to use would be actual descriptions of items from a REIT's fixed asset/depreciation register and underlying acocunting transaction descriptions. Unfortunately, this data is proprietary to organisations unless donated to this repo.
+
+However, I have some [ideas](#next-iteration) to generate some data.
+
+## Demo
+
+See `demo.py` for an example usage of this wrapper. Sample interaction below:
 
 ```
 Evaluate using user input.
@@ -147,18 +189,9 @@ END of Result
 ```
 
 
-## Training data
-
-Included in the repo is sample training data based on the Australian Tax Office [effective life tables](https://www.ato.gov.au/law/view/document?DocID=TXR/TR20184/NAT/ATO/00001). 
-
-I would note from experience that the accuracy of the predictions is highly dependent on good training data. This sample data creates decent results if the language used is very similar to it.
-
-The best data to use would be actual descriptions and assets from a REIT's fixed asset/depreciation register. Unfortunately, this data is proprietary to organisations unless donated to this repo.
-
-However, I have some [ideas](#next-iteration) to generate some data.
-
-
 # Installation
+
+Feel free to install the components yourself. Probably easiest to install [Anaconda](https://www.anaconda.com) as it comes with everything.
 
 #### 1. Python 3.6+
 
@@ -175,6 +208,3 @@ python -m nltk.downloader all;
 #### 3. Python libraries
 
 This program relies on the [`pandas`](http://pandas.pydata.org) and [`scikit-learn`](https://scikit-learn.org/) libraries.
-
-Feel free to install the dependencies yourself. Probably easiest to install [Anaconda](https://www.anaconda.com) as it comes with everything.
-
